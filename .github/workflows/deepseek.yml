@@ -1,4 +1,4 @@
-name: DeepSeek V3.2 SPECIALE (ULTIMATE POWER)
+name: DeepSeek V3.2 GRANDMASTER (FULL AGENT)
 on:
   issues:
     types: [opened]
@@ -10,161 +10,238 @@ permissions:
   issues: write
 
 jobs:
-  speciale_ultimate:
+  grandmaster_agent:
     runs-on: ubuntu-latest
     if: github.actor != 'github-actions[bot]' && (github.event_name == 'issues' || github.event_name == 'issue_comment')
     steps:
-      - name: Depoyu Kontrol Et
+      - name: Proje Sahasını Tarama
         uses: actions/checkout@v4
 
-      - name: DeepSeek Speciale Motorunu Çalıştır
+      - name: DeepSeek Grandmaster Motorunu Çalıştır
         uses: actions/github-script@v7
         env:
           API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         with:
           script: |
-            console.log("🚀 [SPECIALE v8.0] GPT-5 Katili Devreye Giriyor...");
+            /**
+             * ╔═══════════════════════════════════════════════════════════════╗
+             * ║      DEEPSEEK V3.2 SPECIALE: GRANDMASTER EDITION (v9.0)       ║
+             * ║      Teknoloji: Reasoning-First & Autonomous Agentic Vision   ║
+             * ║      Kaynak: DeepSeek Technical Report (Paper)                ║
+             * ╚═══════════════════════════════════════════════════════════════╝
+             */
+            
+            console.log("🚀 [GRANDMASTER] Tam donanımlı ajan başlatılıyor...");
             const userMessage = context.payload.comment ? context.payload.comment.body : context.payload.issue.body;
             const apiKey = process.env.API_KEY ? process.env.API_KEY.trim() : "";
             
-            if (!apiKey) throw new Error("API Anahtarı eksik!");
+            if (!apiKey) throw new Error("Kritik Hata: API Anahtarı bulunamadı!");
 
-            // --- CONTEXT (BAĞLAM) ---
-            const fileMentionRegex = /\b[\w-]+\.(js|py|html|css|json|md|yml|txt|java|c|cpp|go|rs|php)\b/g;
+            // --- 1. GELİŞMİŞ GÖRÜŞ (ADVANCED VISION & CONTEXT) ---
+            // Ajan, sadece komutu değil, projenin "ruhunu" (yapılandırma dosyalarını) okumalıdır.
+            // Bu liste, projenin dilini ve bağımlılıklarını anlamasını sağlar.
+            const criticalFiles = [
+              'package.json', 'package-lock.json', // Node.js
+              'requirements.txt', 'pyproject.toml', 'Pipfile', // Python
+              'composer.json', // PHP
+              'go.mod', // Go
+              'Cargo.toml', // Rust
+              'pom.xml', 'build.gradle', // Java
+              'README.md', 'Dockerfile', 'docker-compose.yml', '.gitignore' // Genel
+            ];
+            
+            // Kullanıcının mesajında geçen özel dosyaları yakala
+            const fileMentionRegex = /\b[\w-\/]+\.(js|py|html|css|json|md|yml|yaml|txt|java|c|cpp|go|rs|php|sql|ts|tsx|sh)\b/g;
             const mentionedFiles = [...new Set(userMessage.match(fileMentionRegex) || [])];
+            
+            // Okunacak tüm dosyaları birleştir (Kritik + Bahsedilenler)
+            const filesToRead = [...new Set([...criticalFiles, ...mentionedFiles])];
+            
             let currentContext = "";
+            console.log(`👀 [GÖZ] ${filesToRead.length} potansiyel dosya taranıyor...`);
 
-            if (mentionedFiles.length > 0) {
-              for (const file of mentionedFiles) {
-                try {
-                  const { data: fileData } = await github.rest.repos.getContent({
-                    owner: context.repo.owner, repo: context.repo.repo, path: file
-                  });
-                  if (fileData.encoding === 'base64') {
-                    const content = Buffer.from(fileData.content, 'base64').toString('utf-8');
-                    currentContext += `\n>>> DOSYA: ${file} <<<\n${content.substring(0, 6000)}\n---SON---\n`;
+            for (const file of filesToRead) {
+              try {
+                const { data: fileData } = await github.rest.repos.getContent({
+                  owner: context.repo.owner, repo: context.repo.repo, path: file
+                });
+                
+                // Sadece metin dosyalarını oku, binary dosyaları atla
+                if (fileData.encoding === 'base64' && fileData.type === 'file') {
+                  const content = Buffer.from(fileData.content, 'base64').toString('utf-8');
+                  // Token limitini korumak için çok büyük dosyaların sadece başını ve sonunu al
+                  let safeContent = content;
+                  if (content.length > 10000) {
+                     safeContent = content.substring(0, 5000) + "\n...[ARA KESİLDİ]...\n" + content.substring(content.length - 2000);
                   }
-                } catch (e) {}
+                  currentContext += `\n>>> DOSYA BAŞLANGICI: ${file} <<<\n${safeContent}\n>>> DOSYA SONU <<<\n`;
+                  console.log(`📖 Okundu ve Hafızaya Alındı: ${file}`);
+                }
+              } catch (e) {
+                // Dosya yoksa sorun değil, bu normal
               }
             }
 
-            // --- PROMPT (KESİN EMİR) ---
+            // --- 2. GRANDMASTER PROMPT (RAPORDAN ALINAN TEKNİKLER) ---
+            [cite_start]// Raporun "Thinking in Tool-Use" [cite: 279] bölümündeki strateji.
             const systemPrompt = `
-            Sen DeepSeek-V3.2-Speciale modelisin. Matematik ve Kodlamada dünyada 1 numarasın.
+            Sen DeepSeek V3.2 Speciale (Grandmaster Level) modelisin.
+            Sen sıradan bir kodlayıcı değil, Otonom bir Ajan (Autonomous Agent)'sın.
             
-            ÖNEMLİ KURAL: 
-            Sen "Reasoning" (Düşünme) yaparsın. <think> bloğunda istediğin kadar düşün.
-            AMA FİNAL CEVABINDA MUTLAKA KOD DOSYALARINI OLUŞTURMALISIN.
-            Düşünceye dalıp kodu yazmayı unutma!
+            GÖREVİN:
+            Kullanıcının isteğini, mevcut proje yapısını (CONTEXT) analiz ederek en profesyonel şekilde yerine getirmek.
             
-            ÇIKTI FORMATI (Bunu kullanmazsan sistem çalışmaz):
-            ---FILENAME: dosya_adi.uzantı---
+            SPECIALE KURALLARI:
+            1. **Düşünce Zinciri (CoT):** Kod yazmadan önce <think> bloğunda detaylı plan yap. Hataları önceden öngör.
+            2. **Ajan Yeteneği:** Dosya oluştururken, diğer dosyalarla (örn. package.json) uyumlu olduğundan emin ol.
+            3. **Tam Hakimiyet:** "Production Ready" (Canlıya Hazır) kod yaz. Eksik import, yarım fonksiyon bırakma.
+            
+            ÇIKTI FORMATI (KESİN VE DEĞİŞMEZ):
+            Dosya oluşturmak/güncellemek için:
+            ---FILENAME: yol/dosya_adi.uzantı---
             [Kodun Tamamı]
             ---END_OF_FILE---
             
-            Silme işlemi:
-            ---DELETE: dosya_adi.uzantı---
+            Dosya silmek için:
+            ---DELETE: yol/dosya_adi.uzantı---
             ---END_DELETE---
             `.trim();
 
-            console.log("🧠 [Reasoning] Derin düşünce süreci başladı...");
+            console.log("🧠 [BEYİN] Reasoning (Derin Düşünme) modu aktif...");
 
-            // --- API: DEEPSEEK-REASONER (EN GÜÇLÜ MODEL) ---
-            const response = await fetch("https://api.deepseek.com/chat/completions", {
-              method: "POST",
-              headers: {
-                "Authorization": `Bearer ${apiKey}`, 
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                model: "deepseek-reasoner", // İŞTE BU! Speciale gücü.
-                messages: [
-                  { role: "system", content: systemPrompt },
-                  { role: "user", content: `GÖREV: ${userMessage}\n\nBAĞLAM:\n${currentContext}` }
-                ],
-                stream: false,
-                max_tokens: 8000 // Uzun düşünmesi için yer açtık
-              })
-            });
+            // --- 3. API ÇAĞRISI (DEEPSEEK REASONER) ---
+            // En güçlü model olan 'deepseek-reasoner' kullanılıyor.
+            try {
+                const response = await fetch("https://api.deepseek.com/chat/completions", {
+                  method: "POST",
+                  headers: {
+                    "Authorization": `Bearer ${apiKey}`, 
+                    "Content-Type": "application/json"
+                  },
+                  body: JSON.stringify({
+                    model: "deepseek-reasoner", // Speciale Modeli
+                    messages: [
+                      { role: "system", content: systemPrompt },
+                      { 
+                        role: "user", 
+                        content: `GÖREV: ${userMessage}\n\n=== MEVCUT PROJE DURUMU (CONTEXT) ===\n${currentContext}` 
+                      }
+                    ],
+                    stream: false,
+                    max_tokens: 8000 // Maksimum düşünme kapasitesi
+                  })
+                });
 
-            if (!response.ok) {
-               const errText = await response.text();
-               throw new Error(`API Hatası: ${errText}`);
-            }
-
-            const data = await response.json();
-            const aiReply = data.choices[0].message.content;      // Kodun olduğu kısım
-            const reasoning = data.choices[0].message.reasoning_content; // Düşünce kısmı
-
-            console.log(`⚡ Cevap alındı. Kod uzunluğu: ${aiReply ? aiReply.length : 0}`);
-
-            // --- DOSYA İŞLEME ---
-            const fileRE = /---FILENAME:\s*(.*?)---\n([\s\S]*?)---END_OF_FILE---/g;
-            const delRE = /---DELETE:\s*(.*?)---\s*---END_DELETE---/g;
-            
-            let match;
-            let filesUpdated = [];
-            let filesDeleted = [];
-
-            if (aiReply) {
-                while ((match = fileRE.exec(aiReply)) !== null) {
-                  const fname = match[1].trim();
-                  const fcont = match[2].trim();
-                  try {
-                    let sha;
-                    try {
-                      const { data: existing } = await github.rest.repos.getContent({
-                        owner: context.repo.owner, repo: context.repo.repo, path: fname
-                      });
-                      sha = existing.sha;
-                    } catch (e) {}
-
-                    await github.rest.repos.createOrUpdateFileContents({
-                      owner: context.repo.owner, repo: context.repo.repo, path: fname,
-                      message: `DeepSeek Speciale: ${fname}`,
-                      content: Buffer.from(fcont).toString('base64'),
-                      sha: sha
-                    });
-                    filesUpdated.push(fname);
-                  } catch (err) { console.error(err); }
+                if (!response.ok) {
+                   const errText = await response.text();
+                   throw new Error(`API Hatası: ${errText}`);
                 }
 
-                while ((match = delRE.exec(aiReply)) !== null) {
-                  const fname = match[1].trim();
-                  if (['.github/workflows/deepseek.yml'].includes(fname)) continue;
-                  try {
-                    const { data: existing } = await github.rest.repos.getContent({
-                      owner: context.repo.owner, repo: context.repo.repo, path: fname
-                    });
-                    await github.rest.repos.deleteFile({
-                      owner: context.repo.owner, repo: context.repo.repo, path: fname,
-                      message: `Speciale Silme: ${fname}`,
-                      sha: existing.sha
-                    });
-                    filesDeleted.push(fname);
-                  } catch (e) {}
+                const data = await response.json();
+                
+                // DeepSeek V3.2 Cevap Yapısı
+                const aiReply = data.choices[0].message.content; 
+                const reasoning = data.choices[0].message.reasoning_content; // Düşünce zinciri
+                
+                console.log(`⚡ Grandmaster Cevabı Geldi. Kod: ${aiReply ? aiReply.length : 0} karakter, Düşünce: ${reasoning ? reasoning.length : 0} karakter.`);
+
+                // --- 4. DOSYA İŞLEME MOTORU (EXECUTION ENGINE) ---
+                const fileRE = /---FILENAME:\s*(.*?)---\n([\s\S]*?)---END_OF_FILE---/g;
+                const delRE = /---DELETE:\s*(.*?)---\s*---END_DELETE---/g;
+                
+                let match;
+                let filesUpdated = [];
+                let filesDeleted = [];
+                let actionLog = "";
+
+                // Dosya Oluşturma Döngüsü
+                if (aiReply) {
+                    while ((match = fileRE.exec(aiReply)) !== null) {
+                      const fname = match[1].trim();
+                      const fcont = match[2].trim();
+                      try {
+                        let sha;
+                        try {
+                          const { data: existing } = await github.rest.repos.getContent({
+                            owner: context.repo.owner, repo: context.repo.repo, path: fname
+                          });
+                          sha = existing.sha;
+                        } catch (e) {}
+
+                        await github.rest.repos.createOrUpdateFileContents({
+                          owner: context.repo.owner, repo: context.repo.repo, path: fname,
+                          message: `DeepSeek Grandmaster: ${fname}`,
+                          content: Buffer.from(fcont).toString('base64'),
+                          sha: sha
+                        });
+                        filesUpdated.push(fname);
+                        console.log(`✅ Dosya Yazıldı: ${fname}`);
+                      } catch (err) { 
+                        console.error(`❌ Hata (${fname}): ${err.message}`);
+                        actionLog += `\n❌ Hata (${fname}): ${err.message}`;
+                      }
+                    }
+
+                    // Dosya Silme Döngüsü
+                    while ((match = delRE.exec(aiReply)) !== null) {
+                      const fname = match[1].trim();
+                      // Kendini ve workflow'u silmesini engelle (Güvenlik)
+                      if (['.github/workflows/deepseek.yml'].includes(fname)) continue;
+                      
+                      try {
+                        const { data: existing } = await github.rest.repos.getContent({
+                          owner: context.repo.owner, repo: context.repo.repo, path: fname
+                        });
+                        await github.rest.repos.deleteFile({
+                          owner: context.repo.owner, repo: context.repo.repo, path: fname,
+                          message: `DeepSeek Grandmaster: ${fname} silindi`,
+                          sha: existing.sha
+                        });
+                        filesDeleted.push(fname);
+                         console.log(`🗑️ Dosya Silindi: ${fname}`);
+                      } catch (e) {}
+                    }
                 }
-            }
 
-            // --- RAPOR ---
-            let report = `### 🏆 DeepSeek V3.2 SPECIALE Sonucu\n\n`;
-            
-            // Düşünce Zincirini Göster (Kanıt)
-            if (reasoning) {
-                report += `<details><summary>🧠 Modelin Beynini Oku (Reasoning Trace)</summary>\n\n\`\`\`text\n${reasoning.substring(0, 3000)}...\n\`\`\`\n</details>\n\n`;
-            }
+                // --- 5. DETAYLI RAPORLAMA ---
+                let report = `### 👑 DeepSeek V3.2 Grandmaster Raporu\n\n`;
+                
+                // Düşünce Zincirini Göster (Rapordaki gibi Reasoning Trace)
+                if (reasoning) {
+                    // Düşünce çok uzunsa yorumu patlatmamak için kısalt, ama linkle veya özetle
+                    const displayReasoning = reasoning.length > 5000 ? reasoning.substring(0, 5000) + "\n... (Düşünce çok derin, devamı gizlendi)" : reasoning;
+                    report += `<details><summary>🧠 <b>Modelin Düşünce Süreci (Reasoning Trace)</b> - Tıkla Gör</summary>\n\n\`\`\`text\n${displayReasoning}\n\`\`\`\n</details>\n\n`;
+                }
 
-            if (filesUpdated.length > 0) {
-               report += `**✅ Oluşturulan Dosyalar:**\n`;
-               filesUpdated.forEach(f => report += `- \`${f}\`\n`);
-            } else if (aiReply && aiReply.length > 0) {
-               report += `**⚠️ Dosya Oluşturulmadı, Sadece Cevap:**\n${aiReply}\n`;
-            } else {
-               report += `**❌ HATA:** Model çok düşündü ama kod bloğu üretmedi. Lütfen tekrar deneyin.`;
-            }
+                if (filesUpdated.length > 0) {
+                   report += `#### 🛠️ Uygulanan Değişiklikler:\n`;
+                   filesUpdated.forEach(f => report += `- ✅ **Oluşturuldu/Güncellendi:** \`${f}\`\n`);
+                }
+                
+                if (filesDeleted.length > 0) {
+                   report += `#### 🗑️ Temizlik İşlemleri:\n`;
+                   filesDeleted.forEach(f => report += `- ❌ **Silindi:** \`${f}\`\n`);
+                }
+                
+                if (filesUpdated.length === 0 && filesDeleted.length === 0) {
+                   report += `#### 💬 Ajan Mesajı:\n${aiReply}\n`;
+                }
 
-            await github.rest.issues.createComment({
-              owner: context.repo.owner, repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: report
-            });
+                if (actionLog) {
+                    report += `\n**⚠️ Sistem Notları:**\n${actionLog}`;
+                }
+
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: report
+                });
+
+            } catch (error) {
+                console.error("GENEL HATA:", error);
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner, repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  body: `### 💥 Kritik Sistem Hatası\n\n**Hata Detayı:** ${error.message}\n\nLütfen API kotanızı veya GitHub Secrets ayarını kontrol edin.`
+                });
+            }
